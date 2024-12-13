@@ -1,5 +1,7 @@
 Problem Overview for Beginners:
-XYZ Corporation needs to launch a new web-based application, and the development team has already prepared the code. However, the code hasn't been tested yet, and the system administrators are unavailable to set up the necessary resources.
+XYZ Corporation needs to launch a new web-based application, and the development team has already prepared the code. However,
+the code hasn't been tested yet,
+and the system administrators are unavailable to set up the necessary resources.
 
 To solve this, we need to automate the creation of the following infrastructure using AWS CloudFormation:
 
@@ -7,9 +9,11 @@ Web Tier: Launch an EC2 instance in a public subnet that allows HTTP and SSH acc
 
 Application Tier: Launch an EC2 instance in a private subnet, which can only be accessed via SSH from the Web Tier instance. This will act as the application server.
 
-Database Tier: Launch an RDS MySQL instance in a private subnet. It should only accept connections on port 3306 from the Application Tier, ensuring that the database is not directly accessible from the internet.
+Database Tier: Launch an RDS MySQL instance in a private subnet. It should only accept connections on port 3306 from the Application Tier, 
+ensuring that the database is not directly accessible from the internet.
 
-The goal is to provide a self-service solution for the development team so they can test their code without needing help from system administrators. They should be able to create, manage, and delete the infrastructure on their own.
+The goal is to provide a self-service solution for the development team so they can test their code without needing help from system administrators. They should be able to create, 
+manage, and delete the infrastructure on their own.
 
 Also, when the development team deletes the stack, we need to ensure that the RDS database is not deleted to avoid accidental data loss.
 
