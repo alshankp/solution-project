@@ -1,0 +1,130 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template to create web, application, and DB tiers with RDS protection.
+
+Resources:
+  # Web Tier EC2 Instance
+  WebInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-0c55b159cbfafe1f0  # Replace with a valid AMI ID for your region
+      SecurityGroups: 
+        - !Ref WebSecurityGroup
+      SubnetId: !Ref PublicSubnet
+      KeyName: !Ref KeyName
+      Tags:
+        - Key: Name
+          Value: WebTier
+
+  # Web Tier Security Group
+  WebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP and SSH
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: 0.0.0.0/0
+
+  # Application Tier EC2 Instance
+  AppInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-0c55b159cbfafe1f0  # Replace with a valid AMI ID for your region
+      SecurityGroups:
+        - !Ref AppSecurityGroup
+      SubnetId: !Ref PrivateSubnet
+      KeyName: !Ref KeyName
+      Tags:
+        - Key: Name
+          Value: AppTier
+
+  # Application Tier Security Group
+  AppSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow SSH from Web Tier
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: !Sub "${WebInstance.PublicIp}/32"
+
+  # RDS MySQL Instance (DB Tier) with Deletion Protection and Retain DeletionPolicy
+  MyRDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceClass: db.t2.micro
+      Engine: MySQL
+      MasterUsername: admin
+      MasterUserPassword: password123
+      AllocatedStorage: 20
+      DeletionProtection: true
+      DBName: MyDatabase
+    DeletionPolicy: Retain
+
+  # VPC for the setup
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+
+  # Public Subnet for Web Tier
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: "10.0.1.0/24"
+      AvailabilityZone: us-east-1a
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: PublicSubnet
+
+  # Private Subnet for Application Tier
+  PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: "10.0.2.0/24"
+      AvailabilityZone: us-east-1a
+      Tags:
+        - Key: Name
+          Value: PrivateSubnet
+
+  # Internet Gateway for public subnet
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: InternetGateway
+
+  # Attach Internet Gateway to the VPC
+  AttachInternetGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+Parameters:
+  KeyName:
+    Type: String
+    Description: The EC2 Key Pair to enable SSH access to the instances.
+    MinLength: 1
+    MaxLength: 255
+    AllowedPattern: "^[a-zA-Z0-9-_]+$"
+    ConstraintDescription: "Must be a valid EC2 Key Pair name."
+  
+Outputs:
+  WebInstancePublicIP:
+    Description: "Public IP of the Web Instance"
+    Value: !GetAtt WebInstance.PublicIp
