@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template to create IAM Dev group and assign necessary permissions.
+
+Resources:
+  # Dev IAM Group
+  DevGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: DevGroup
+
+  # IAM Policy for the Dev Group (Example: EC2 and RDS permissions)
+  DevGroupPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: DevGroupPolicy
+      Groups:
+        - !Ref DevGroup
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - ec2:DescribeInstances
+              - ec2:StartInstances
+              - ec2:StopInstances
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - rds:DescribeDBInstances
+              - rds:DescribeDBClusters
+            Resource: "*"
+  
+Outputs:
+  DevGroupName:
+    Description: "The name of the Dev IAM Group"
+    Value: !Ref DevGroup
+  DevGroupPolicyName:
+    Description: "The policy attached to the Dev IAM Group"
+    Value: !Ref DevGroupPolicy
