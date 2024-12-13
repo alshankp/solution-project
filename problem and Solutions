@@ -1,0 +1,43 @@
+# Problem Overview:
+Your task was to help the development team launch and test a web-based application without needing help from the system administrators. The web application needs a three-tier architecture:
+
+# Web Tier: An EC2 instance accessible from the internet to serve the website.
+Application Tier: An EC2 instance in a private network, only accessible from the Web Tier.
+Database Tier: A MySQL RDS database, only accessible from the Application Tier.
+Additionally, you were asked to ensure that the development team could test the application without needing to manually configure or provision resources, 
+and to make sure that the database wouldn’t be deleted when the environment is removed.
+
+# Our Approach to Solve This:
+Web Tier (Public EC2 Instance):
+
+We created an EC2 instance (a virtual machine) that is publicly accessible.
+This EC2 instance will host the web application.
+We configured a security group (a firewall) to allow HTTP (for the website) and SSH (for remote management) from anywhere on the internet.
+Application Tier (Private EC2 Instance):
+
+We created a second EC2 instance that is only accessible from the Web Tier.
+This instance runs the application logic and communicates with the database.
+We set up a private subnet, meaning it doesn’t have a direct route to the internet. It can only be accessed by the Web Tier instance (public EC2 instance).
+Database Tier (RDS MySQL Instance):
+
+We used Amazon RDS to create a MySQL database in a private subnet, so it isn't accessible from the internet directly.
+We allowed this RDS instance to accept MySQL connections only from the Application Tier EC2 instance.
+To protect the database from accidental deletion, we enabled deletion protection for the RDS instance. This ensures that even if someone tries to delete the stack or environment, the database won't be deleted automatically.
+CloudFormation for Automation:
+
+We used AWS CloudFormation, which is an AWS service that allows us to define the entire infrastructure (web, application, and database tiers) as code.
+With CloudFormation, the development team can simply launch a CloudFormation stack (a set of AWS resources defined in a template) to automatically create the environment. They don't need to manually configure each resource, and it helps them test their code faster.
+Solution for Developers:
+
+The CloudFormation template was shared with the development team.
+When they need to test, they can just use the template to launch the environment.
+After testing, they can delete the CloudFormation stack, but the database will not be deleted because of the deletion protection.
+This means that the developers don’t need to spend time managing infrastructure. They can focus on coding and testing the application.
+Summary of the Key Steps:
+Web Server (EC2 in Public Subnet): Launched an EC2 instance in a public subnet to serve the website.
+Application Server (EC2 in Private Subnet): Launched a second EC2 instance in a private subnet to run the app logic.
+Database (RDS MySQL): Set up a MySQL database that can only be accessed from the application server.
+Automation with CloudFormation: Automated the entire process using CloudFormation, so the development team doesn’t need to configure everything manually.
+Deletion Protection: Ensured that the database wasn’t accidentally deleted when the stack is removed.
+Conclusion:
+By using AWS services like EC2, RDS, and CloudFormation, we were able to create a solution that automates the entire process of setting up a web application environment. The development team can easily launch, test, and delete the infrastructure without involving system administrators, while keeping the database safe from accidental deletion.
